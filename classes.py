@@ -5,28 +5,42 @@ class Attribute():
 
 
 
-class Point():
-	label
-	attribute+value
+class Point:
+	def __init__(self,nucleotides,label):
+		self.label=label
+		self.features={}
+		for i in range(len(nucleotides)):
+			self.features[i]=nucleotides[i]
+		
+
 	
-class Label():
+
 	
 
 
-class DataSet():
-	classnumber
-	AttributeSet
-	pointset
+class DataSet:
 	
 	
-	def getAttributeInfoGain
+	def __init__(self):
+		self.PointSet=[]
+		self.labels=[]
+		
+		
+	def append(self,point):
+		self.PointSet.append(point)
 	
-	def getAttributeGini
+	def getAttributeInfoGain(self):
+		i=1
 	
-	def split()
+	def getAttributeGini(self):
+		i=1
+	
+	def split():
+		i=1
 
 
-	def shouldStop()
+	def shouldStop():
+		i=1
 
 
 

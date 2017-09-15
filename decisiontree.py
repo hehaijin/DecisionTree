@@ -1,3 +1,13 @@
+import csv
+from classes import DataSet,Point
 
-with open('testing.csv') as test:
-	print(test.read())
+
+dataset=DataSet()
+
+with open('training.csv', newline='') as csvfile:
+		spamreader = csv.reader(csvfile)
+		for row in spamreader:
+			p=Point(row[1],row[2])
+			dataset.append(p)
+
+
