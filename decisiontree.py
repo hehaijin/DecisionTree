@@ -11,3 +11,14 @@ with open('training.csv', newline='') as csvfile:
 			dataset.append(p)
 
 
+
+
+
+
+
+
+a,b=dataset.getAttributeInfoGain()
+print(a)
+
+b=dataset.getEntropy()
+print(b)
