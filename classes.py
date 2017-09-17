@@ -29,7 +29,14 @@ class Point:
 		for i in range(len(nucleotides)):
 			self.features[i]=nucleotides[i]
 	
-	#def getLabel(self,TreeRoot):
+	def getLabel(self,TreeRoot):
+		if isinstance(TreeRoot,Leaf):
+			return TreeRoot.value
+		else:
+			v=TreeRoot.value
+			index=valuedict[self.features[v]]
+			node=TreeRoot.edges[index]
+			return self.getLabel(node)
 
 	
 
@@ -188,10 +195,6 @@ class DataSet:
 		if self.getFeatureNumber() !=0:
 			attri, entro=self.getAttributeInfoGain()
 			c=self.getEntropy()
-			print("entropy gain")
-			print(c)
-			print(entro)
-			print(c-entro)
 			if c-entro >= self.limit:
 				#adding subnode
 				n=Node(attri)
@@ -209,9 +212,12 @@ class DataSet:
 					data[valuedict[v]].append(self.PointSet[i])
 				for i in range(4):
 					data[i].buildDecisionTreefrom(n,majoritylabel)
+			else:
+				lf=Leaf(self.getMajorityLabel())
+				upperNode.edges.append(lf)
 		else:
 			lf=Leaf(self.getMajorityLabel())
-			upperNode.edges.add(lf)
+			upperNode.edges.append(lf)
 			
 		
 
