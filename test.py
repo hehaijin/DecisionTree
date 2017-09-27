@@ -1,14 +1,12 @@
-class MyClass:
-    static_elem = 123
-    
+#test functional programming
 
-    def __init__(t):
-        t.object_elem = 456
-    @staticmethod
-    def add(t):
-        t.add2=1;
+def f1(a):
+	return a+1
 
-c1 = MyClass()
-c2 = MyClass()
-c1.add()
-print(c1.add2)
+
+
+def ff(f1,a):
+	return f1(a)
+	
+	
+print(ff(f1,2))

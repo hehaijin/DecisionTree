@@ -3,16 +3,6 @@ from classes import DataSet,Point,Node,Leaf
 
 
 
-def printTree(root):
-	print(root.value)
-	if isinstance(root, Leaf):
-		print()
-	else:
-		for i in range(len(root.edges)):
-			n=root.edges[i]
-			printTree(n)
-
-
 trainset=DataSet()
 testset=DataSet()
 
@@ -23,7 +13,8 @@ with open('training.csv', newline='') as csvfile:
 			p=Point(row[1],row[2])
 			trainset.append(p)
 
-treeroot=trainset.buildDecitionTree()
+#buiding the tree with different methods and different chisquare
+treeroot=trainset.buildDecitionTree(method="gini",chisquare="99")
 
 
 with open('testing.csv', newline='') as csvfile:

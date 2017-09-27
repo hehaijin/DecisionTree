@@ -1,8 +1,9 @@
 import numpy as np
 import math
 
-valuedict={"A":0,"T":1,"G":2,"C":3,"N":0,"D":0, "R":0, "S":0}
+valuedict={"A":0,"T":1,"G":2,"C":3,"N":0,"D":0, "R":3, "S":3}
 labeldict={"EI":0,"IE":1,"N":2}
+chisquaretable={"99":16.812,"95":12.592,"0":0 }                #chi-square table for freedom 6
 
 
 
@@ -62,7 +63,8 @@ class DataSet:
 		else:
 			return len(self.PointSet[0].features.keys())
 	
-	
+	#get the attribute to split the data set based on info gain method
+	#return the attribute and the entropy after split
 	def getAttributeInfoGain(self):
 		entropies={}
 		total=len(self.PointSet)
@@ -102,7 +104,8 @@ class DataSet:
 		
 		
 		
-		
+	#cauculate entropy for the dataset.	
+	
 	def getEntropy(self):
 		total=len(self.PointSet)
 		count=np.zeros(3)
@@ -115,52 +118,74 @@ class DataSet:
 				count[2]=count[2]+1
 		
 		result=0
-		print(count)
+		#print(count)
 		for i in range(3):
 			if count[i]!=0:
 				result=result-count[i]/total*math.log2(count[i]/total)
 		return result
 		
-	
+	#get the attribute to split the data set based on gini index method
+	#return the attribute and the gini index after split
 	def getAttributeGini(self):
-		i=1
-	
-	def split(self,attribute):
+		total=len(self.PointSet)
+		ginis={}
+		for attribute in self.PointSet[0].features.keys():
+			avc=np.zeros((4,3))
+			marginX=np.zeros(4)
+			marginY=np.zeros(3)
+			for i in range(len(self.PointSet)):
+				v=self.PointSet[i].features[attribute]
+				l=self.PointSet[i].label
+				avc[valuedict[v],labeldict[l]]=avc[valuedict[v],labeldict[l]]+1
+			
+			for i in range(4):
+				for j in range(3):
+					marginX[i]=marginX[i]+avc[i][j]
+					marginY[j]=marginY[j]+avc[i][j]
+			for i in range(4):
+				if marginX[i]==0:
+					marginX[i]=1
+			
+				
+			totalgini=0;
+			for i in range(4):
+				c=1
+				for j in range(3):
+					c=c-avc[i][j]*avc[i][j]/marginX[i]/marginX[i];
+				totalgini=totalgini+c
+			ginis[attribute]=totalgini
+		#print(ginis)
+		m=min(ginis.values())  #this could be nan
+		for k,v in ginis.items():
+			if v==m:
+				return (k,m)	
+		
+		
+			
+	#build decision tree using current data set as root node of the tree
+	def buildDecitionTree(self,method="infogain",chisquare="95"):
+		if method=="infogain":
+			attri, entro=self.getAttributeInfoGain()
+		else:
+			attri,entro=self.getAttributeGini()
+		c=self.getEntropy()
+		mlabel=self.getMajorityLabel()
+		#if c-entro >= self.limit:
+		root=Node(attri)
+		print("adding root "+str(attri))
 		size=len(self.PointSet)
 		data=[]
 		for i in range(4):
-			data[i]=DataSet()
-		
+			data.append(DataSet())
 		for i in range(size):
-			self.PointSet[i].features.pop(attribute)
-			label=self.PointSet[i].label
-			data[labeldict[label]].add(self.PointSet[i])
 			
-		
-	def buildDecitionTree(self):
-		attri, entro=self.getAttributeInfoGain()
-		c=self.getEntropy()
-		mlabel=self.getMajorityLabel()
-		if c-entro >= self.limit:
-			root=Node(attri)
-			print("adding root "+str(attri))
-			size=len(self.PointSet)
-			data=[]
-			for i in range(4):
-				data.append(DataSet())
-			for i in range(size):
-				
-				v=self.PointSet[i].features[attri]
-				self.PointSet[i].features.pop(attri)
-				data[valuedict[v]].append(self.PointSet[i])
-			for i in range(4):
-				print(len(data[i].PointSet))
-				data[i].buildDecisionTreefrom(root,mlabel)
-		
-		
-		
-		
-		
+			v=self.PointSet[i].features[attri]
+			self.PointSet[i].features.pop(attri)
+			data[valuedict[v]].append(self.PointSet[i])
+		for i in range(4):
+			print("the size of the splitted tree is "+str(len(data[i].PointSet)))
+			data[i].buildDecisionTreefrom(root,mlabel,method,chisquare)
+	
 		return root
 			
 	def getMajorityLabel(self):
@@ -181,23 +206,32 @@ class DataSet:
 		
 		
 		
-	
-	def buildDecisionTreefrom(self,upperNode,majoritylabel):
+	#building decision tree but the current node is not root node.
+	#for recurrsion call
+	def buildDecisionTreefrom(self,upperNode,majoritylabel,method="infogain", chisquare="99"):
 		
 		if len(self.PointSet)==0:
 			lf=Leaf(majoritylabel)
 			upperNode.edges.append(lf)
 			return
-		if len(self.PointSet) <10:
+		if len(self.PointSet) <2:
 			lf=Leaf(self.getMajorityLabel())
 			upperNode.edges.append(lf)
 			return
 		if self.getFeatureNumber() !=0:
-			attri, entro=self.getAttributeInfoGain()
+			cslimit= chisquaretable[chisquare]
+			if method=="infogain":
+				attri, entro=self.getAttributeInfoGain()
+			else:
+				attri, entro=self.getAttributeGini()
 			c=self.getEntropy()
-			if c-entro >= self.limit:
+			cs=self.chisquare(attri)
+			#the stopping criteria 
+			if cs >= cslimit or cslimit==0 :
+			#if c-entro>0.1:
 				#adding subnode
 				n=Node(attri)
+				#print("splitting at attr "+ str(attri))
 				upperNode.edges.append(n)
 				
 				#splitting
@@ -222,15 +256,36 @@ class DataSet:
 		
 
 
-	def shouldStop(self):
-		entropy=self.getEntropy()
-		k,m=self.getAttributeInfoGain()
-		if  entropy-m < limit:
-			return False
-		else:
-			 return True
 
-
+			 
+			 
+	#calculating chi square for an atribute for the dataset		 
+	def chisquare(self, attr):
+		total=len(self.PointSet)
+		count=np.zeros(3)
+		for i in range(len(self.PointSet)):
+			label=self.PointSet[i].label
+			count[labeldict[label]]=count[labeldict[label]]+1
+		avc=np.zeros((4,3)) #avc table
+		marginX=np.zeros(4)
+		print(count)
+		for i in range(len(self.PointSet)):
+			v=self.PointSet[i].features[attr]
+			l=self.PointSet[i].label
+			avc[valuedict[v],labeldict[l]]=avc[valuedict[v],labeldict[l]]+1
+		for i in range(4):
+			for j in range(3):
+				marginX[i]=marginX[i]+avc[i][j]
+		chisquare=0
+		for i in range(4):
+			for j in range(3):
+				expect=count[j]/total*marginX[i]
+				if expect==0:
+					chisqure=chisquare
+				else:
+					chisquare=chisquare+ (avc[i][j]-expect)*(avc[i][j]-expect)/expect
+		print("chi square for attribute "+ str(attr)+" is "+ str(chisquare))
+		return chisquare
 
 
 
