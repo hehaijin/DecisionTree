@@ -1,23 +1,33 @@
 import csv
 from classes import DataSet,Point,Node,Leaf
+import sys
 
 
+trainingfile=sys.argv[1]
+testfile=sys.argv[2]
+outputfile=sys.argv[3]
+method=sys.argv[4]
+chisquare=sys.argv[5]
+
+print(trainingfile)
+print(outputfile)
 
 trainset=DataSet()
 testset=DataSet()
 
 #Each row read from the csv file is returned as a list of strings.
-with open('training.csv', newline='') as csvfile:
+with open(trainingfile, newline='') as csvfile:
 		trainreader = csv.reader(csvfile)
 		for row in trainreader:
 			p=Point(row[1],row[2])
 			trainset.append(p)
 
 #buiding the tree with different methods and different chisquare
-treeroot=trainset.buildDecitionTree(method="gini",chisquare="99")
+#change parameters to use different methods and different chi square level.
+treeroot=trainset.buildDecitionTree(method=method, chisquare=chisquare)
 
 
-with open('testing.csv', newline='') as csvfile:
+with open(testfile, newline='') as csvfile:
 		testreader = csv.reader(csvfile)
 		data=[]
 		for row in testreader:
@@ -28,7 +38,7 @@ with open('testing.csv', newline='') as csvfile:
 			newrow.append(label)
 			data.append(newrow)
 			
-with open('result.csv', "w") as csvfile:
+with open(outputfile, "w") as csvfile:
 		testwriter=csv.writer(csvfile)
 		testwriter.writerow(["id","class"])
 		for row in data:

@@ -6,23 +6,26 @@ labeldict={"EI":0,"IE":1,"N":2}
 chisquaretable={"99":16.812,"95":12.592,"0":0 }                #chi-square table for freedom 6
 
 
-
+#for decision tree node except leaf
 class Node:
 	def __init__(self,value):
 		self.value=value
 		self.edges=[]
 
+#decision tree leaf node
 class Leaf(Node):
 	def __init__(self, value):
 		self.value=value
 
+
+#attribute 
 class Attribute():
 	def _init_(self,name):
 		self.name=name
 
 
 
-
+#one data entry line
 class Point:
 	def __init__(self,nucleotides,label="N"):
 		self.label=label
@@ -41,7 +44,8 @@ class Point:
 
 	
 
-
+# a collections of data points
+#includes methods that calculate entropy, gini index, build decision tree.
 class DataSet:
 	def __init__(self):
 		self.PointSet=[]
@@ -142,16 +146,16 @@ class DataSet:
 				for j in range(3):
 					marginX[i]=marginX[i]+avc[i][j]
 					marginY[j]=marginY[j]+avc[i][j]
-			for i in range(4):
-				if marginX[i]==0:
-					marginX[i]=1
 			
 				
 			totalgini=0;
 			for i in range(4):
 				c=1
 				for j in range(3):
-					c=c-avc[i][j]*avc[i][j]/marginX[i]/marginX[i];
+					if marginX[i]==0:
+						c=c
+					else:
+						c=c-avc[i][j]*avc[i][j]/marginX[i]/marginX[i];
 				totalgini=totalgini+c
 			ginis[attribute]=totalgini
 		#print(ginis)
@@ -163,11 +167,12 @@ class DataSet:
 		
 			
 	#build decision tree using current data set as root node of the tree
-	def buildDecitionTree(self,method="infogain",chisquare="95"):
+	def buildDecitionTree(self,method="infogain",chisquare="99"):
 		if method=="infogain":
 			attri, entro=self.getAttributeInfoGain()
 		else:
 			attri,entro=self.getAttributeGini()
+		print("method is"+method)
 		c=self.getEntropy()
 		mlabel=self.getMajorityLabel()
 		#if c-entro >= self.limit:
@@ -208,7 +213,7 @@ class DataSet:
 		
 	#building decision tree but the current node is not root node.
 	#for recurrsion call
-	def buildDecisionTreefrom(self,upperNode,majoritylabel,method="infogain", chisquare="99"):
+	def buildDecisionTreefrom(self,upperNode,majoritylabel,method, chisquare):
 		
 		if len(self.PointSet)==0:
 			lf=Leaf(majoritylabel)
@@ -220,6 +225,7 @@ class DataSet:
 			return
 		if self.getFeatureNumber() !=0:
 			cslimit= chisquaretable[chisquare]
+			
 			if method=="infogain":
 				attri, entro=self.getAttributeInfoGain()
 			else:
@@ -245,7 +251,7 @@ class DataSet:
 					self.PointSet[i].features.pop(attri)
 					data[valuedict[v]].append(self.PointSet[i])
 				for i in range(4):
-					data[i].buildDecisionTreefrom(n,majoritylabel)
+					data[i].buildDecisionTreefrom(n,majoritylabel,method,chisquare)
 			else:
 				lf=Leaf(self.getMajorityLabel())
 				upperNode.edges.append(lf)
