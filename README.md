@@ -12,7 +12,9 @@ python decisiontree.py trainingfile testfile outputfile method chisquare
 for example
 
 python decisiontree.py training.csv testing.csv result.csv infogain 99
+
 python decisiontree.py training.csv testing.csv result.csv infogain 0
+
 python decisiontree.py training.csv testing.csv result.csv gini 95
 
 related classes are put in classes.py

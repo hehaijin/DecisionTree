@@ -3,7 +3,7 @@ import math
 
 valuedict={"A":0,"T":1,"G":2,"C":3,"N":0,"D":0, "R":3, "S":3}
 labeldict={"EI":0,"IE":1,"N":2}
-chisquaretable={"99":16.812,"95":12.592,"0":0 }                #chi-square table for freedom 6
+chisquaretable={"99":14.7,"95":12.592,"0":0 }                #chi-square table for freedom 6
 
 
 #for decision tree node except leaf
